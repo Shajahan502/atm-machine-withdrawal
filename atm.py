@@ -1,94 +1,80 @@
-# ATM Machine Simulation
+import matplotlib.pyplot as plt
 
-def authenticate_user(correct_pin, attempts=3):
-    """
-    Function to authenticate user using PIN.
-    Allows limited attempts.
-    """
-    while attempts > 0:
-        entered_pin = input("🔐 Enter your PIN: ")
-        if entered_pin == correct_pin:
-            print("✅ Authentication Successful\n")
+class ATM:
+    def __init__(self, pin, balance):
+        self.pin = pin
+        self.balance = balance
+        self.authenticated = False
+        self.withdraw_history = []
+        self.balance_history = []
+
+    def verify_pin(self, entered_pin):
+        if entered_pin == self.pin:
+            self.authenticated = True
+            print("\nPIN Verified Successfully!")
             return True
         else:
-            attempts -= 1
-            print(f"❌ Incorrect PIN. Attempts left: {attempts}")
-    
-    print("🚫 Card Blocked. Too many incorrect attempts.")
-    return False
+            print("\nIncorrect PIN.")
+            return False
 
+    def withdraw(self, amount):
+        if not self.authenticated:
+            print("Please authenticate first.")
+            return
 
-def show_menu():
-    """
-    Displays ATM menu options.
-    """
-    print("\n====== ATM MENU ======")
-    print("1. Check Balance")
-    print("2. Withdraw Money")
-    print("3. Exit")
-
-
-def check_balance(balance):
-    """
-    Displays current balance.
-    """
-    print(f"💰 Your current balance is: ₹{balance}")
-
-
-def withdraw_money(balance):
-    """
-    Handles withdrawal operation.
-    """
-    try:
-        amount = float(input("💸 Enter amount to withdraw: ₹"))
-        
-        if amount <= 0:
-            print("❌ Invalid amount. Please enter a positive value.")
-        elif amount > balance:
-            print("❌ Insufficient balance.")
+        if amount > self.balance:
+            print(f"Insufficient funds! Current balance: ${self.balance}")
+        elif amount <= 0:
+            print("Invalid amount.")
         else:
-            balance -= amount
-            print(f"✅ Please collect your cash: ₹{amount}")
-            print(f"💰 Remaining balance: ₹{balance}")
-    
-    except ValueError:
-        print("❌ Invalid input. Please enter a numeric value.")
-    
-    return balance
+            self.balance -= amount
+            print(f"Withdrawal Successful! Dispensing: ${amount}")
+            print(f"Remaining Balance: ${self.balance}")
+
+            # Store data for graph
+            self.withdraw_history.append(amount)
+            self.balance_history.append(self.balance)
+
+    def show_graph(self):
+        if len(self.withdraw_history) == 0:
+            print("No transactions to display graph.")
+            return
+
+        plt.plot(self.withdraw_history, self.balance_history, marker='o')
+        plt.xlabel("Withdrawal Amount")
+        plt.ylabel("Remaining Balance")
+        plt.title("ATM Transaction Graph")
+        plt.grid()
+        plt.show()
 
 
-def atm_machine():
-    """
-    Main ATM function.
-    """
-    balance = 10000.0
-    correct_pin = "1234"
+# --- Simulation ---
+my_atm = ATM(1234, 1000)
 
-    print("🏧 Welcome to ATM Machine")
+print("--- Welcome to the Bank ---")
+pin = int(input("Enter your PIN: "))
 
-    # Authenticate user
-    if not authenticate_user(correct_pin):
-        return
-
-    # Main loop
+if my_atm.verify_pin(pin):
     while True:
-        show_menu()
-        choice = input("👉 Enter your choice: ")
+        print("\n1. Withdraw")
+        print("2. Show Graph")
+        print("3. Exit")
 
-        if choice == "1":
-            check_balance(balance)
+        choice = int(input("Enter choice: "))
 
-        elif choice == "2":
-            balance = withdraw_money(balance)
+        if choice == 1:
+            amount = int(input("Enter withdrawal amount: "))
+            my_atm.withdraw(amount)
 
-        elif choice == "3":
-            print("🙏 Thank you for using ATM. Goodbye!")
+        elif choice == 2:
+            my_atm.show_graph()
+
+        elif choice == 3:
+            print("Thank you for using ATM!")
             break
 
         else:
-            print("❌ Invalid choice. Please try again.")
+            print("Invalid choice")
 
-
-# Run the ATM system
-if __name__ == "__main__":
-    atm_machine()
+else:
+    print("Transaction aborted.")
