@@ -1,1 +1,5 @@
+# ATM Machine Project Requirements
+# This project uses only Python standard library
+
+python>=3.7
 
